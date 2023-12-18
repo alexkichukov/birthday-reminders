@@ -1,9 +1,10 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useEffect } from 'react';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
-import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import { setupDatabase } from '../db';
+import RemindersContextProvider from '../context/RemindersContext';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -18,7 +19,7 @@ export const unstable_settings = {
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+const RootLayout = () => {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
@@ -35,22 +36,25 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
+  // Setup database
+  useEffect(setupDatabase, []);
+
   if (!loaded) {
     return null;
   }
 
-  return <RootLayoutNav />;
-}
-
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <RemindersContextProvider>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack.Screen
+          name="edit/[id]"
+          options={{ presentation: 'modal', title: 'Edit a reminder' }}
+        />
+        <Stack.Screen name="add" options={{ presentation: 'modal', title: 'Create a reminder' }} />
       </Stack>
-    </ThemeProvider>
+    </RemindersContextProvider>
   );
-}
+};
+
+export default RootLayout;
