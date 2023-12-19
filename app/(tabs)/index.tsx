@@ -4,19 +4,27 @@ import { StyleSheet, Text, ScrollView, View, Pressable, Alert } from 'react-nati
 import { FontAwesome } from '@expo/vector-icons';
 import { useReminders } from '../../context/RemindersContext';
 import { Link } from 'expo-router';
+import colors from '../../constants/colors';
 
 export default function TabOneScreen() {
   const { reminders, deleteReminder } = useReminders();
 
   return (
-    <View>
+    <View style={{ height: '100%' }}>
       <ScrollView>
         <View style={styles.container}>
           {reminders.map((r) => (
             <View style={styles.reminderContainer} key={r.id}>
               <Text style={styles.date}>{moment(r.date).format('Do MMMM')}</Text>
               <Link href={('/edit/' + r.id) as any} asChild>
-                <Pressable style={styles.reminder} android_ripple={{ color: '#272127' }}>
+                <Pressable
+                  style={
+                    moment(r.date).isSame(new Date(), 'day')
+                      ? styles.todayReminder
+                      : styles.reminder
+                  }
+                  android_ripple={{ color: '#272127' }}
+                >
                   <View>
                     <Text style={styles.name}>{r.name}</Text>
                     {r.description && <Text style={styles.description}>{r.description}</Text>}
@@ -42,9 +50,7 @@ export default function TabOneScreen() {
           ))}
         </View>
       </ScrollView>
-      <View style={{ position: 'absolute', bottom: 0, right: 0 }}>
-        <CreateButton href="/add" />
-      </View>
+      <CreateButton href="/add" />
     </View>
   );
 }
@@ -71,6 +77,15 @@ const styles = StyleSheet.create({
   },
   reminder: {
     backgroundColor: '#181818',
+    padding: 16,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  todayReminder: {
+    backgroundColor: '#181818',
+    borderWidth: 2,
+    borderColor: colors.primary,
     padding: 16,
     borderRadius: 10,
     flexDirection: 'row',

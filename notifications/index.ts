@@ -55,7 +55,7 @@ export async function schedulePushNotification(id: string, name: string, date: D
       body: '🎉🎂',
       sound: true,
     },
-    trigger: { repeats: true, month: date.getMonth(), day: date.getDate() },
+    trigger: { repeats: true, month: date.getMonth(), day: date.getDate(), hour: 0, minute: 0 },
   });
 }
 
