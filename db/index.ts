@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 import uuid from 'react-native-uuid';
 import { Reminder } from '../types';
+import { cancelPushNotification, schedulePushNotification } from '../notifications';
 
 export const db = SQLite.openDatabase('birthdayreminders.db');
 
@@ -40,9 +41,26 @@ export const addReminder = (name: string, description: string, date: string) =>
         'INSERT INTO reminders (id, name, description, date) VALUES (?, ?, ?, ?)',
         [reminderId, name, description, date],
         () => {
-          // TODO: Schedule Push Notification for the specified date here
-
+          schedulePushNotification(reminderId, name, new Date(date));
           resolve(reminderId);
+        },
+        () => {
+          reject();
+          return false;
+        }
+      );
+    });
+  });
+
+export const updateReminder = (id: string, name: string, description: string, date: string) =>
+  new Promise<void>((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        'UPDATE reminders SET name = ?, description = ?, date = ? WHERE id = ?',
+        [name, description, date, id],
+        () => {
+          schedulePushNotification(id, name, new Date(date));
+          resolve();
         },
         () => {
           reject();
@@ -56,9 +74,10 @@ export const deleteReminder = (id: string) =>
   new Promise<string>((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        'DELETE FROM reminders where id = ?',
+        'DELETE FROM reminders WHERE id = ?',
         [id],
         () => {
+          cancelPushNotification(id);
           resolve(id);
         },
         () => {

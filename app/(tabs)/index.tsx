@@ -1,6 +1,6 @@
 import CreateButton from '../../components/CreateButton';
 import moment from 'moment';
-import { StyleSheet, Text, ScrollView, View, Pressable } from 'react-native';
+import { StyleSheet, Text, ScrollView, View, Pressable, Alert } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useReminders } from '../../context/RemindersContext';
 import { Link } from 'expo-router';
@@ -9,25 +9,43 @@ export default function TabOneScreen() {
   const { reminders, deleteReminder } = useReminders();
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {reminders.map((r) => (
-        <View style={styles.reminderContainer} key={r.id}>
-          <Text style={styles.date}>{moment(r.date).format('Do MMMM')}</Text>
-          <Link href={'/edit/' + r.id} asChild>
-            <Pressable style={styles.reminder} android_ripple={{ color: '#272127' }}>
-              <View>
-                <Text style={styles.name}>{r.name}</Text>
-                {r.description && <Text style={styles.description}>{r.description}</Text>}
-              </View>
-              <Pressable style={styles.delete} onPress={() => deleteReminder(r.id)}>
-                <FontAwesome name="trash" color="#943535" size={18} />
-              </Pressable>
-            </Pressable>
-          </Link>
+    <View>
+      <ScrollView>
+        <View style={styles.container}>
+          {reminders.map((r) => (
+            <View style={styles.reminderContainer} key={r.id}>
+              <Text style={styles.date}>{moment(r.date).format('Do MMMM')}</Text>
+              <Link href={('/edit/' + r.id) as any} asChild>
+                <Pressable style={styles.reminder} android_ripple={{ color: '#272127' }}>
+                  <View>
+                    <Text style={styles.name}>{r.name}</Text>
+                    {r.description && <Text style={styles.description}>{r.description}</Text>}
+                  </View>
+                  <Pressable
+                    style={styles.delete}
+                    onPress={() =>
+                      Alert.alert(
+                        'Delete Reminder',
+                        'Are you sure you want to delete the reminder?',
+                        [
+                          { style: 'cancel', text: 'Cancel' },
+                          { text: 'Delete', onPress: () => deleteReminder(r.id) },
+                        ]
+                      )
+                    }
+                  >
+                    <FontAwesome name="trash" color="#943535" size={18} />
+                  </Pressable>
+                </Pressable>
+              </Link>
+            </View>
+          ))}
         </View>
-      ))}
-      <CreateButton href="/add" />
-    </ScrollView>
+      </ScrollView>
+      <View style={{ position: 'absolute', bottom: 0, right: 0 }}>
+        <CreateButton href="/add" />
+      </View>
+    </View>
   );
 }
 
@@ -35,7 +53,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 30,
+    paddingBottom: 80,
   },
   title: {
     fontSize: 20,

@@ -5,6 +5,7 @@ import { MarkedDates } from 'react-native-calendars/src/types';
 import { useReminders } from '../context/RemindersContext';
 import { Calendar } from 'react-native-calendars';
 import { useMemo, useState } from 'react';
+import { router } from 'expo-router';
 
 const AddModalScreen = () => {
   const [name, setName] = useState('');
@@ -24,7 +25,10 @@ const AddModalScreen = () => {
     [date]
   );
 
-  const onCreate = async () => addReminder(name, description, date);
+  const onCreate = async () => {
+    addReminder(name, description, date);
+    router.replace('/');
+  };
 
   return (
     <View style={styles.container}>

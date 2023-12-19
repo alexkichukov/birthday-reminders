@@ -1,10 +1,11 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
-import * as Notifications from 'expo-notifications';
 import { setupDatabase } from '../db';
 import RemindersContextProvider from '../context/RemindersContext';
+import { registerForPushNotificationsAsync } from '../notifications';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -36,8 +37,11 @@ const RootLayout = () => {
     }
   }, [loaded]);
 
-  // Setup database
-  useEffect(setupDatabase, []);
+  // Setup database and notifications
+  useEffect(() => {
+    setupDatabase();
+    registerForPushNotificationsAsync();
+  }, []);
 
   if (!loaded) {
     return null;

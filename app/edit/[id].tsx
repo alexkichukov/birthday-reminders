@@ -1,16 +1,28 @@
 import Button from '../../components/Button';
 import colors from '../../constants/colors';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native';
 import { MarkedDates } from 'react-native-calendars/src/types';
 import { useReminders } from '../../context/RemindersContext';
 import { Calendar } from 'react-native-calendars';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
 
 const AddModalScreen = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
-  const { addReminder } = useReminders();
+  const { reminders, updateReminder } = useReminders();
+  const { id } = useLocalSearchParams();
+
+  useEffect(() => {
+    const reminder = reminders.find((r) => r.id === id);
+
+    if (!reminder) return;
+
+    setName(reminder.name);
+    setDescription(reminder.description);
+    setDate(reminder.date);
+  }, [id, reminders]);
 
   const marked: MarkedDates = useMemo(
     () => ({
@@ -24,7 +36,18 @@ const AddModalScreen = () => {
     [date]
   );
 
-  const onCreate = async () => addReminder(name, description, date);
+  const onSave = async () => {
+    updateReminder(id as string, name, description, date);
+    router.replace('/');
+  };
+
+  if (!name) {
+    return (
+      <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -37,6 +60,7 @@ const AddModalScreen = () => {
           placeholder="Description"
         />
         <Calendar
+          initialDate={date}
           theme={{
             todayTextColor: colors.secondary,
             textDisabledColor: colors.disabled,
@@ -49,7 +73,7 @@ const AddModalScreen = () => {
           style={styles.calendar}
           onDayPress={(day) => setDate(day.dateString)}
         />
-        <Button text="Create" onPress={onCreate} disabled={!name || !date} />
+        <Button text="Save" onPress={onSave} disabled={!name || !date} />
       </View>
     </View>
   );
